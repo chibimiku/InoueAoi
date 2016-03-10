@@ -17,6 +17,11 @@ function sayaword($str){
 	mikulog('Try to say a word.');
 }
 
+//get newest unread.
+function getlist(){
+	
+}
+
 function mikulog($content, $level = 'INFO'){
 	printerr('['.date('Y-m-d H:i:s').']['.$level.']'.$content."\n");
 }
