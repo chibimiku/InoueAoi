@@ -23,4 +23,5 @@ define( "WB_CALLBACK_URL" , 'http://xxxxxxxxxxxx/callback.php' );
 //filepath config
 $imgpath = '/data/image/';
 
+
 ?>
