@@ -16,7 +16,9 @@ $mysql_username = 'root';
 $mysql_password = '';
 
 //weibo config
-$weibo_key = '';
+define( "WB_AKEY" , 'xxxxxxxxxx' );
+define( "WB_SKEY" , 'xxxxxxxxxxxxxxxxxxxxxxxxx' );
+define( "WB_CALLBACK_URL" , 'http://xxxxxxxxxxxx/callback.php' );
 
 //filepath config
 $imgpath = '/data/image/';

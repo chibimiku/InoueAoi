@@ -7,7 +7,10 @@
 define('AOICHAN_RUNNING', true);
 
 require 'conf/config.inc.php';
-sayaword('test');
+//load library
+require 'lib/libweibo-master/saetv2.ex.class.php';
+
+//sayaword('test');
 echo "all task end.";
 
 function sayaword($str){
