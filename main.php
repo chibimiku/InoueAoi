@@ -6,15 +6,49 @@
 
 define('AOICHAN_RUNNING', true);
 
+//crontab runs under cli.
+//just now use this entry.
+
+//options area.
+$shortopts = "";
+$shortopts .= "a:";  // Required value
+//$shortopts .= "v::"; // Optional value
+//$shortopts .= "abc"; // These options do not accept values
+$longopts = array(
+	"required:", // Required value
+	"optional::", // Optional value
+	"option", // No value
+	"opt", // No value
+);
+$options = getopt($shortopts, $longopts);
+//var_dump($options);
+
+if(!isset($options['a'])){
+	exit("AoiChan:ERROR, cannot find action.cli usage: php main.php -a actions \n");
+}
+$action = $options['a'];
+
 require 'conf/config.inc.php';
 //load library
 require 'lib/libweibo-master/saetv2.ex.class.php';
 
-getmyatlist(false);
+switch($action){
+	case 'timing':
+		$showtime = date("Y-m-d H:i:s");
+		$talkstr = "现在时间是 $showtime , 请注意保护眼睛，每个小时休息一下~ ";
+		//echo $talkstr;
+		sayaword($talkstr,array('天使动漫谐星战术研究院'));
+		break;
+	default:
+		echo "available actions: \n";
+		echo "timing: check in time and repo.\n";
+		exit("AoiChan:ERROR, cannot find action.cli usage: php main.php -a actions \n");
+}
+
+//getmyatlist(false);
 echo "all task end.\n";
 
 //unit test set.
-
 function test_post_normal(){
 	//some testdata
 	$f_array = array('天使动漫谐星战术研究院', '紫夜幻晴');
