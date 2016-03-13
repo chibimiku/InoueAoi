@@ -21,7 +21,6 @@ $longopts = array(
 	"opt", // No value
 );
 $options = getopt($shortopts, $longopts);
-//var_dump($options);
 
 if(!isset($options['a'])){
 	exit("AoiChan:ERROR, cannot find action.cli usage: php main.php -a actions \n");
@@ -39,9 +38,22 @@ switch($action){
 		//echo $talkstr;
 		sayaword($talkstr,array('天使动漫谐星战术研究院'));
 		break;
+	case 'refresh':
+		$atlist = getmyatlist(false);
+		if(is_array($atlist) && count($atlist) > 0){
+			$lastestpost = $atlist[0];
+			analy($lastestpost);
+			//var_dump($atlist);
+		}else{
+			echo "nothing new.\n";
+		}
+		//get newest at.
+		
+		break;
 	default:
 		echo "available actions: \n";
-		echo "timing: check in time and repo.\n";
+		echo "timing. check in time and repo.\n";
+		echo "refresh. find new atme post.\n";
 		exit("AoiChan:ERROR, cannot find action.cli usage: php main.php -a actions \n");
 }
 
@@ -70,6 +82,16 @@ function analy($myatinfo){
 		//repost($myatinfo['idstr'], '收到啦 ');
 	}elseif(strpos($myatinfo['text'], '233') !== false){
 		echo 'debug:23333';
+	}elseif(strpos($myatinfo['text'], '转发抽个') !== false){
+		//repost and get award
+		repost($myatinfo['idstr'], WB_ID_REWEARD_USERNAME.' ,come');
+		echo "debug: ot reward. repost..";
+	}elseif(strpos($myatinfo['text'], '占卜' !== false)){
+		$predictword = '';
+		include 'lib/constellation/constellation.inc.php';
+		$apirs = bae_api_get('horoscope', 'virgo', 'today');
+		//sayaword($predictword,array(WB_ID_MASTER_USERNAME));
+		var_dump($apirs);
 	}else{
 		echo 'debug:nothing~';
 	}
@@ -84,14 +106,13 @@ function repost($sid, $text = NULL, $is_comment = 0){
 function getmyatlist($new = true){
 	$since_id = 0;
 	if($new){
-		$getsince_id = intval(file_get_contents(WB_FILE_SINCE_ID));
+		$getsince_id = file_get_contents(WB_FILE_SINCE_ID);
 		if($getsince_id > 0){
 			$since_id = $getsince_id;
 		}
 	}
-	
 	$o = new SaeTClientV2( WB_AKEY , WB_SKEY , WB_TOKEN);
-	$o->set_debug(true);
+	//$o->set_debug(true);
 	$rs = $o->mentions(1,50,$since_id);
 	$myatinfo = $rs['statuses'][0];
 	if(is_array($myatinfo)){
@@ -102,6 +123,7 @@ function getmyatlist($new = true){
 	}
 	//$debuginfo = var_export($rs);
 	//file_put_contents('test.txt', $debuginfo);
+	return $rs['statuses'];
 }
 
 function postapic($str, $picpath, $atlist = array()){
