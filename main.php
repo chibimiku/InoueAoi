@@ -94,7 +94,7 @@ function analy($myatinfo){
 	//get from getmyatlist.
 	mikulog('Entry core AI...', 'INFO');
 	if(strpos($myatinfo['text'], '能收到吗') !== false){
-		echo 'debug:got'.$myatinfo['idstr'];
+		mikulog('got ping:'.$myatinfo['idstr'], 'DEBUG');
 		//repost($myatinfo['idstr'], '收到啦 ');
 	}elseif(strpos($myatinfo['text'], '/233 ') !== false){
 		mikulog('pick up 233.');
@@ -150,10 +150,13 @@ function getmyatlist($new = true){
 	$o = new SaeTClientV2( WB_AKEY , WB_SKEY , WB_TOKEN);
 	//$o->set_debug(true);
 	$rs = $o->mentions(1,50,$since_id);
+	if(!isset($rs['statuses'][0])){
+		return false;
+	}
 	$myatinfo = $rs['statuses'][0];
 	if(is_array($myatinfo)){
 		mikulog("got myatinfo, start to analy...",'DEBUG');
-		analy($myatinfo);
+		//analy($myatinfo);
 		file_put_contents(WB_FILE_SINCE_ID, $myatinfo['idstr']);
 	}else{
 		return false;
