@@ -34,6 +34,9 @@ require 'lib/constellation/constellation.inc.php';
 require 'lib/common/aoi_common.inc.php';
 
 switch($action){
+	case 'test':
+		sayaword('测试一下，你能听到吗？',array('天使动漫谐星战术研究院'));
+		break;
 	case 'timing':
 		$showtime = date("Y-m-d H:i:s");
 		$talkstr = "现在时间是 $showtime , 请注意保护眼睛，每个小时休息一下~ ";
@@ -42,7 +45,7 @@ switch($action){
 		break;
 	case 'refresh':
 		mikulog('action is refresh...');
-		$atlist = getmyatlist(false);
+		$atlist = getmyatlist(true);
 		mikulog('got atlist for '.count($atlist),'DEBUG');
 		if(is_array($atlist) && count($atlist) > 0){
 			$lastestpost = $atlist[0];
@@ -53,7 +56,15 @@ switch($action){
 			echo "nothing new.\n";
 		}
 		//get newest at.
-		
+		break;
+	case 'token':
+		$o = new SaeTOAuthV2( WB_AKEY , WB_SKEY );
+		$o->debug = true;
+		$code_url = $o->getAuthorizeURL( WB_CALLBACK_URL );
+		mikulog("got code data.".$code_url);
+		$verify_data = file_get_contents($code_url);
+		file_put_contents('debug_data.html', $verify_data);
+		mikulog("got verify_data. should put to sina...");
 		break;
 	default:
 		echo "available actions: \n";
@@ -92,6 +103,12 @@ function analy($myatinfo){
 		//repost and get award
 		mikulog("debug: ot reward. repost..");
 		repost($myatinfo['idstr'], WB_ID_REWEARD_USERNAME.' ,come');
+	}elseif(strpos($myatinfo['text'], '/fungal ') !== false){
+		mikulog('pick up fungal...');
+		repost($myatinfo['idstr'], "奈斯方狗，支持支持~~~ [可怜]");
+	}elseif(strpos($myatinfo['text'], '/吃糖 ') !== false){
+		mikulog('pick up candy...');
+		repost($myatinfo['idstr'], '嗷呜~ 好甜好甜！ [可爱]');
 	}elseif(strpos($myatinfo['text'], '/占卜 ') !== false){
 		mikulog('pick up constellation','DEBUG');
 		//find type from str.
