@@ -30,6 +30,7 @@ $action = $options['a'];
 require 'conf/config.inc.php';
 //load library
 require 'lib/libweibo-master/saetv2.ex.class.php';
+require 'lib/constellation/constellation.inc.php';
 
 switch($action){
 	case 'timing':
@@ -39,9 +40,12 @@ switch($action){
 		sayaword($talkstr,array('天使动漫谐星战术研究院'));
 		break;
 	case 'refresh':
+		mikulog('action is refresh...');
 		$atlist = getmyatlist(false);
+		mikulog('got atlist for '.count($atlist),'DEBUG');
 		if(is_array($atlist) && count($atlist) > 0){
 			$lastestpost = $atlist[0];
+			mikulog('got the 1st atlist...', 'DEBUG');
 			analy($lastestpost);
 			//var_dump($atlist);
 		}else{
@@ -76,24 +80,37 @@ function test_post_pic(){
 //core ai set.
 function analy($myatinfo){
 	//get from getmyatlist.
-	echo "\n";
+	mikulog('Entry core AI...', 'INFO');
 	if(strpos($myatinfo['text'], '能收到吗') !== false){
 		echo 'debug:got'.$myatinfo['idstr'];
 		//repost($myatinfo['idstr'], '收到啦 ');
-	}elseif(strpos($myatinfo['text'], '233') !== false){
-		echo 'debug:23333';
-	}elseif(strpos($myatinfo['text'], '转发抽个') !== false){
+	}elseif(strpos($myatinfo['text'], '/233 ') !== false){
+		mikulog('pick up 233.');
+		repost($myatinfo['idstr'], '[哈哈]');
+	}elseif(strpos($myatinfo['text'], '/转发抽奖 ') !== false){
 		//repost and get award
+		mikulog("debug: ot reward. repost..");
 		repost($myatinfo['idstr'], WB_ID_REWEARD_USERNAME.' ,come');
-		echo "debug: ot reward. repost..";
-	}elseif(strpos($myatinfo['text'], '占卜' !== false)){
+	}elseif(strpos($myatinfo['text'], '/占卜 ') !== false){
+		mikulog('pick up constellation','DEBUG');
+		//find type from str.
+		$typeid = constellation_gettypeid($myatinfo['text']);
+		if(!$typeid){
+			echo "cannot find typeid...";
+			return false;
+		}
 		$predictword = '';
-		include 'lib/constellation/constellation.inc.php';
-		$apirs = bae_api_get('horoscope', 'virgo', 'today');
+		mikulog('start to get constellation info for'.$typeid, 'TRACE');
+		$remotedata = constellation_api_get($typeid);
+		if(!is_array($remotedata)){
+			return false;
+		}
+		$predictword = '今天是'.$remotedata['Riqi'].'，'.$remotedata['Msg'].'[兔子]...'.$remotedata['Zy'];
+		echo $predictword."\n";
+		repost($myatinfo['idstr'], $predictword);
 		//sayaword($predictword,array(WB_ID_MASTER_USERNAME));
-		var_dump($apirs);
 	}else{
-		echo 'debug:nothing~';
+		echo "debug:nothing~\n got content: $myatinfo[text]";
 	}
 }
 
@@ -116,6 +133,7 @@ function getmyatlist($new = true){
 	$rs = $o->mentions(1,50,$since_id);
 	$myatinfo = $rs['statuses'][0];
 	if(is_array($myatinfo)){
+		mikulog("got myatinfo, start to analy...",'DEBUG');
 		analy($myatinfo);
 		file_put_contents(WB_FILE_SINCE_ID, $myatinfo['idstr']);
 	}else{

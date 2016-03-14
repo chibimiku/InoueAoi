@@ -9,7 +9,20 @@
  //return data like this.
 
  //from text to typeid.
- 
+function constellation_api_get($typeid){
+	$url  = 'http://shxz.yiqibazi.com/Handler/GetXZYS.ashx?typeId='.$typeid;
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array('User-Agent :Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36'));
+	echo "http request sent...";
+	$content = curl_exec($ch);
+	echo "http request got completed...";
+	//remove '(' and ')'
+	$content = substr($content, 1);
+	$content = substr($content, 0, strlen($content)-1);
+	return json_decode($content);
+}
+
 function constellation_gettypeid($str){
 	$detectarray = array(
 		'水瓶座' => 1,
@@ -26,25 +39,11 @@ function constellation_gettypeid($str){
 		'摩羯座' => 12,
 	);
 	foreach($detectarray as $key => $row){
-		if(strpos($str, $row) !== false){
-			return $key;
+		if(strpos($str, $key) !== false){
+			return $row;
 		}
 	}
 	return false;
 }
- 
-function constellation_api_get($typeid){
-	$url  = 'http://shxz.yiqibazi.com/Handler/GetXZYS.ashx?typeId='.$typeid;
-	$ch = curl_init($url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array('User-Agent :Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36'));
-	$content = curl_exec($ch);
-	//remove '(' and ')'
-	$content = substr($content, 1);
-	$content = substr($content, 0, strlen($content)-1);
-	return json_decode($content);
-}
-	
-	
 
 ?>
