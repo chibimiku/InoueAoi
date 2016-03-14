@@ -31,6 +31,7 @@ require 'conf/config.inc.php';
 //load library
 require 'lib/libweibo-master/saetv2.ex.class.php';
 require 'lib/constellation/constellation.inc.php';
+require 'lib/common/aoi_common.inc.php';
 
 switch($action){
 	case 'timing':
@@ -100,9 +101,10 @@ function analy($myatinfo){
 			return false;
 		}
 		$predictword = '';
-		mikulog('start to get constellation info for'.$typeid, 'TRACE');
+		mikulog('start to get constellation info for id:'.$typeid.' ...', 'TRACE');
 		$remotedata = constellation_api_get($typeid);
 		if(!is_array($remotedata)){
+			mikulog('Remote API cannot hold.','ERROR');
 			return false;
 		}
 		$predictword = '今天是'.$remotedata['Riqi'].'，'.$remotedata['Msg'].'[兔子]...'.$remotedata['Zy'];
@@ -168,24 +170,6 @@ function getlist(){
 	//just request weibo api here.
 }
 
-//some common functions.
-function getatlist($str, $atlist){
-	$atlist_str = '';
-	foreach($atlist as $atsingle){
-		$atlist_str = $atlist_str.'@'.$atsingle.' ';
-	}
-	$final_str = $atlist_str.$str;
-	return $final_str;
-}
 
-function mikulog($content, $level = 'INFO'){
-	printerr('['.date('Y-m-d H:i:s').']['.$level.']'.$content."\n");
-}
-
-function printerr($str){
-	$stderr = fopen('php://stderr', 'w');
-	fwrite($stderr, $str);
-	fclose($stderr);
-}
 
 ?>

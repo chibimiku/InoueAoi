@@ -20,6 +20,7 @@ function constellation_api_get($typeid){
 	//remove '(' and ')'
 	$content = substr($content, 1);
 	$content = substr($content, 0, strlen($content)-1);
+	//echo $content;
 	return json_decode($content);
 }
 
