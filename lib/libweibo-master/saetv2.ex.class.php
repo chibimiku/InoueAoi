@@ -355,7 +355,7 @@ class SaeTOAuthV2 {
 		curl_setopt($ci, CURLOPT_ENCODING, "");
 		curl_setopt($ci, CURLOPT_SSL_VERIFYPEER, $this->ssl_verifypeer);
 		if (version_compare(phpversion(), '5.4.0', '<')) {
-			curl_setopt($ci, CURLOPT_SSL_VERIFYHOST, 1);
+			curl_setopt($ci, CURLOPT_SSL_VERIFYHOST, 2); //see https://segmentfault.com/q/1010000002396283/a-1020000002396308
 		} else {
 			curl_setopt($ci, CURLOPT_SSL_VERIFYHOST, 2);
 		}
@@ -388,6 +388,10 @@ class SaeTOAuthV2 {
 			}
 		} else {
 			if ( !defined('SAE_ACCESSKEY') ) {
+				//set remote_addr if not exists.
+				if(!isset($_SERVER['REMOTE_ADDR'])){
+					$_SERVER['REMOTE_ADDR'] = '';
+				}
 				$headers[] = "API-RemoteIP: " . $_SERVER['REMOTE_ADDR'];
 			}
 		}
