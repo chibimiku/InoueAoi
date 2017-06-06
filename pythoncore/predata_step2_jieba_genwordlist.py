@@ -62,7 +62,7 @@ def gen_cut_file_jieba(inputfile, outputfile):
 def gen_vocabulary_file_jieba(inputfile, outputfile, start_header, vocabulary_size, appendword = ''):
     vocabulary_count = 0
     content = open(inputfile, 'rb').read()
-    tags = jieba.analyse.extract_tags(content, topK = vocabulary_size)
+    tags = jieba.analyse.extract_tags(content, topK=vocabulary_size)
     with open(outputfile, "w", encoding = "utf8") as ff:
         #先输入头部的几个tag
         for word in START_VOCABULART:
@@ -87,10 +87,10 @@ gen_cut_file_jieba(encoding_in_filename, encoding_cut_out_filename)
 gen_cut_file_jieba(decoding_in_filename, decoding_cut_out_filename)
 gen_cut_file_jieba(test_encoding_in_filename, test_encoding_cut_out_filename)
 gen_cut_file_jieba(test_decoding_in_filename, test_decoding_cut_out_filename)
-gen_vocabulary_file_jieba(encoding_in_filename,encoding_out_filename, START_VOCABULART, vocabulary_size)
-gen_vocabulary_file_jieba(decoding_in_filename,decoding_out_filename, START_VOCABULART, vocabulary_size)
-gen_vocabulary_file_jieba(test_encoding_in_filename,test_encoding_out_filename, vocabulary_size, appendword)
-gen_vocabulary_file_jieba(test_decoding_in_filename,test_decoding_out_filename, vocabulary_size, appendword)
+gen_vocabulary_file_jieba(encoding_in_filename,encoding_out_filename, START_VOCABULART, vocabulary_size, appendword)
+gen_vocabulary_file_jieba(decoding_in_filename,decoding_out_filename, START_VOCABULART, vocabulary_size, appendword)
+gen_vocabulary_file_jieba(test_encoding_in_filename,test_encoding_out_filename, START_VOCABULART, vocabulary_size, appendword)
+gen_vocabulary_file_jieba(test_decoding_in_filename,test_decoding_out_filename, START_VOCABULART, vocabulary_size, appendword)
 
 #在上述步骤都完成之后，依词表将分词结果(_cut的输出)转化为向量
 data_utils.data_to_token_ids(encoding_cut_out_filename, encoding_vec_filename, encoding_out_filename)
