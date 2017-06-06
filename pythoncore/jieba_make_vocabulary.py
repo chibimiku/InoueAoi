@@ -11,13 +11,15 @@ vocabulary_size=200000
 
 encoding_in_filename = 'train.enc'
 encoding_out_filename = 'train_encode_vocabulary'
+
 decoding_in_filename = 'train.dec'
 decoding_out_filename = 'train_decode_vocabulary'
 
-#outfileobj = open(outfilename, 'w+', encoding = 'utf-8')
+test_encoding_in_filename = 'test.enc'
+test_encoding_out_filename = 'test_encode_vocabulary'
 
-
-#移除标点符号？
+test_decoding_in_filename = 'test.dec'
+test_decoding_out_filename = 'test_decode_vocabulary'
 
 def gen_vocabulary_file_jieba(inputfile, outputfile, vocabulary_size):    
     content = open(inputfile, 'rb').read()
@@ -29,4 +31,7 @@ def gen_vocabulary_file_jieba(inputfile, outputfile, vocabulary_size):
     
 gen_vocabulary_file_jieba(encoding_in_filename,encoding_out_filename, vocabulary_size)
 gen_vocabulary_file_jieba(decoding_in_filename,decoding_out_filename, vocabulary_size)
+gen_vocabulary_file_jieba(test_encoding_in_filename,test_encoding_out_filename, vocabulary_size)
+gen_vocabulary_file_jieba(test_decoding_in_filename,test_decoding_out_filename, vocabulary_size)
+
 print ("tasks done!")
