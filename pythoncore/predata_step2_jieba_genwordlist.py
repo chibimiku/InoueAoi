@@ -1,7 +1,13 @@
 # encoding=utf-8
 
+#jieba 分词
+#https://github.com/fxsjy/jieba
+
 import jieba
 import jieba.analyse
+#data_utils from tensorflow modules
+#https://github.com/tensorflow/models/blob/master/tutorials/rnn/translate/
+import data_utils
 
 #设置常量
 vocabulary_size = 200000
@@ -9,20 +15,24 @@ vocabulary_size = 200000
 encoding_in_filename = 'train.enc'
 encoding_out_filename = 'train_encode_vocabulary'
 encoding_cut_out_filename = 'train_cut.enc'
+encoding_vec_filename = 'train_encode.vec'
+
 decoding_in_filename = 'train.dec'
 decoding_out_filename = 'train_decode_vocabulary'
 decoding_cut_out_filename = 'train_cut.dec'
+decoding_vec_filename = 'train_decode.vec'
 
 test_encoding_in_filename = 'test.enc'
 test_encoding_out_filename = 'test_encode_vocabulary'
 test_encoding_cut_out_filename = 'test_cut.enc'
+test_encoding_vec_filename = 'test_encode.vec'
+
 test_decoding_in_filename = 'test.dec'
 test_decoding_out_filename = 'test_decode_vocabulary'
 test_decoding_cut_out_filename = 'test_cut.dec'
+test_decoding_vec_filename = 'test_decode.vec'
 
 appendword = 'data/chinese_char_3k5.txt' #3500个常用汉字
-
-
 
 ###
 # 特殊标记，用来填充标记对话
@@ -81,3 +91,9 @@ gen_vocabulary_file_jieba(encoding_in_filename,encoding_out_filename, START_VOCA
 gen_vocabulary_file_jieba(decoding_in_filename,decoding_out_filename, START_VOCABULART, vocabulary_size)
 gen_vocabulary_file_jieba(test_encoding_in_filename,test_encoding_out_filename, vocabulary_size, appendword)
 gen_vocabulary_file_jieba(test_decoding_in_filename,test_decoding_out_filename, vocabulary_size, appendword)
+
+#在上述步骤都完成之后，依词表将分词结果(_cut的输出)转化为向量
+data_utils.data_to_token_ids(encoding_cut_out_filename, encoding_vec_filename, encoding_out_filename)
+data_utils.data_to_token_ids(decoding_cut_out_filename, decoding_vec_filename, decoding_out_filename)
+data_utils.data_to_token_ids(test_encoding_cut_out_filename, test_encoding_vec_filename, test_encoding_out_filename)
+data_utils.data_to_token_ids(test_decoding_cut_out_filename, test_decoding_vec_filename, test_decoding_out_filename)
