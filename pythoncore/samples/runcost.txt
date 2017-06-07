@@ -1,0 +1,7 @@
+Intel(R) Xeon(R) CPU E5-2630 v3 @ 2.40GHz x2
+370 GFlops / per CPU linpack
+cost 2:20:00 / 5000 steps.
+layer_size: 768
+layers_num: 5
+batch_size: 64
+
