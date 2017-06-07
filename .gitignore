@@ -48,3 +48,6 @@ Temporary Items
 conf/config.inc.php
 debug
 data/since_id
+pythoncore/test_decode_vocabulary
+pythoncore/__pycache__/data_utils.cpython-35.pyc
+pythoncore/train_decode.vec
