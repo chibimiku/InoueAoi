@@ -51,3 +51,8 @@ data/since_id
 pythoncore/test_decode_vocabulary
 pythoncore/__pycache__/data_utils.cpython-35.pyc
 pythoncore/train_decode.vec
+pythoncore/test_decode.vec
+pythoncore/test_encode.vec
+pythoncore/train_encode_vocabulary
+pythoncore/train_encode.vec
+pythoncore/train_decode_vocabulary

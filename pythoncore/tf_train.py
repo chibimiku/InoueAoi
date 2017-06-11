@@ -17,11 +17,11 @@ test_encode_vec = 'test_encode.vec'
 test_decode_vec = 'test_decode.vec'
  
 # 词汇表大小5000
-vocabulary_encode_size = 5000
-vocabulary_decode_size = 5000
+vocabulary_encode_size = 127963
+vocabulary_decode_size = 129142
  
 buckets = [(5, 10), (10, 15), (20, 25), (40, 50)]
-layer_size = 256  # 每层大小
+layer_size = 768  # 每层大小
 num_layers = 5   # 层数
 batch_size =  64
  
@@ -94,7 +94,7 @@ with tf.Session(config=config) as sess:
 				sess.run(model.learning_rate_decay_op)
 			previous_losses.append(loss)
 			# 保存模型
-			checkpoint_path = "d:/code/python/test_models/chatbot_seq2seq.ckpt"
+			checkpoint_path = "d:/code/python/test_models2/chatbot_seq2seq.ckpt"
 			model.saver.save(sess, checkpoint_path, global_step=model.global_step)
 			loss = 0.0
 			# 使用测试数据评估模型
