@@ -6,7 +6,7 @@ import jieba
 #根据同义词生成一系列对话用于强化训练
 
 #首先加载同义词，直接弄到内存里面去
-synword_filename = "data/synword_test.txt"
+synword_filename = "data/synonym_from_HIT.txt"
 synword_dict = {}
 
 originalqa_filename = "data/data_ori.txt"
@@ -19,7 +19,7 @@ with open(synword_filename, 'r', encoding="utf-8") as fp:
             continue 
             
         if(words[0] in synword_dict):
-            print (words[0])
+            #print (words[0])
             if(not words[1] in synword_dict[words[0]]):
                 synword_dict[words[0]].append(words[1].strip())
         else:
