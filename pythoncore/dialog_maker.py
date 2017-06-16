@@ -6,18 +6,19 @@ import jieba
 #根据同义词生成一系列对话用于强化训练
 
 #首先加载同义词，直接弄到内存里面去
-synword_filename = "data/synonym_from_HIT.txt"
+synword_filename = "data/outfile_2.txt"
 synword_dict = {}
 
 originalqa_filename = "data/data_ori.txt"
 
 #从文件加载两两对应的同义词
+dictcount = 0
 with open(synword_filename, 'r', encoding="utf-8") as fp:
     for line in fp:
+        dictcount = dictcount + 1
         words = line.split(" ")
         if(len(words) < 2):
             continue 
-            
         if(words[0] in synword_dict):
             #print (words[0])
             if(not words[1] in synword_dict[words[0]]):
@@ -25,6 +26,8 @@ with open(synword_filename, 'r', encoding="utf-8") as fp:
         else:
             synword_dict[words[0]] = [words[1].strip()]
 
+
+print ("load " + str(dictcount) + " word(s)")
 '''
 --->file
 大家 大伙儿
@@ -35,7 +38,7 @@ with open(synword_filename, 'r', encoding="utf-8") as fp:
 {'星星': ['星辰'], '大家': ['大伙儿', '米娜桑']}
 '''
 
-print (synword_dict)
+#print (synword_dict)
 
 #读取句子，根据分词结果，依次找每个词的同义词进行拼接
 with open(originalqa_filename, 'r', encoding="utf-8") as fp:
