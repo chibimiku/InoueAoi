@@ -57,3 +57,4 @@ pythoncore/train_encode_vocabulary
 pythoncore/train_encode.vec
 pythoncore/train_decode_vocabulary
 *.pyc
+pythoncore/weibo_drive/debug.log
