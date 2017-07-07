@@ -4,15 +4,15 @@ import os
 import numpy as np
 
 # 数据位置
-ckppath = 'd:/code/python/test_models/'
+ckppath = 'data/chatbot_models/'
  
 PAD_ID = 0
 GO_ID = 1
 EOS_ID = 2
 UNK_ID = 3
  
-train_encode_vocabulary = 'train_encode_vocabulary'
-train_decode_vocabulary = 'train_decode_vocabulary'
+train_encode_vocabulary = 'data/chatbot_models/train_encode_vocabulary'
+train_decode_vocabulary = 'data/chatbot_models/train_decode_vocabulary'
  
 def read_vocabulary(input_file):
 	tmp_vocab = []
@@ -26,11 +26,11 @@ vocab_en, _, = read_vocabulary(train_encode_vocabulary)
 _, vocab_de, = read_vocabulary(train_decode_vocabulary)
  
 # 词汇表大小5000
-vocabulary_encode_size = 5000
-vocabulary_decode_size = 5000
+vocabulary_encode_size = 218436
+vocabulary_decode_size = 257986
  
 buckets = [(5, 10), (10, 15), (20, 25), (40, 50)]
-layer_size = 256  # 每层大小
+layer_size = 768  # 每层大小
 num_layers = 5   # 层数
 batch_size =  1
  

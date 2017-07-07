@@ -41,5 +41,5 @@ if __name__=='__main__':
         time.sleep(1)
         #rs = _get_first_at_info()
         #print (rs)
-        _new_status("第三版又来啦，这次换了python控制台，我们看看在接入tensorflow之后会怎么样吧；）")
+        #_new_status("第三版又来啦，这次换了python控制台，我们看看在接入tensorflow之后会怎么样吧；）")
         print ("all task done~")
