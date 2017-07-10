@@ -1,5 +1,7 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse
+import tensorflow as tf
+import seq2seq_model
 
 import jieba
 
@@ -32,9 +34,10 @@ class Chatbot():
         
         print ("start to inst tensorflow session...")
         self.sess = tf.Session()
+        ckpt = tf.train.get_checkpoint_state(ckppath)
         if ckpt != None:
             print("Load ckpt from " + ckpt.model_checkpoint_path)
-            model.saver.restore(sess, ckpt.model_checkpoint_path)
+            self.model.saver.restore(sess, ckpt.model_checkpoint_path)
         print ("tensorflow module loading completed.")
         
     def _read_vocabulary(self, input_file, my_encoding = "utf-8"):
@@ -103,12 +106,17 @@ class MyhandlerAoi(BaseHTTPRequestHandler):
                 if(len(rs) == 2):
                     query_components[rs[0]] = rs[1]
             #query_components = dict(qc.split("=") )
-            print (str(var1.get_value()))
+            #print (str(var1.get_value())) #debug for global data.
+            if(rs["custword"]):
+                result_content = bot.get_respon(rs["custword"])
+            else:
+                result_content = "input error..."
             
             self.send_response(200)
             self.send_header('Content-type','text/html')
             self.end_headers()
             self.wfile.write("<h1>Device Static Content</h1>".encode("utf-8"))
+
             print (query_components)
             return
         except Exception as ex:
@@ -121,7 +129,7 @@ def run(port, server_class=HTTPServer, handler_class=MyhandlerAoi):
         var1 = TestClassA1()
         #use bot~~
         global bot
-        bot = Chatbot('../data/chatbot_models/', '../data/chatbot_models/train_encode_vocabulary', '../data/chatbot_models/train_decode_vocabulary')
+        bot = Chatbot('data/chatbot_models/', 'data/chatbot_models/train_encode_vocabulary', 'data/chatbot_models/train_decode_vocabulary')
         server_address = ('', port)
         httpd = server_class(server_address, handler_class)
         print ("prepare http server on port:" + str(port))
