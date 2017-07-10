@@ -64,7 +64,6 @@ class Chatbot():
         
 class MyhandlerAoi(BaseHTTPRequestHandler):
 
-
     def do_POST(self):
         try:
             query = urlparse(self.path).query
