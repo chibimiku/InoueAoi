@@ -64,3 +64,4 @@ pythoncore/data/chatbot_models/chatbot_seq2seq.ckpt-300000.meta
 pythoncore/data/chatbot_models/checkpoint
 pythoncore/data/chatbot_models/train_decode_vocabulary
 pythoncore/data/chatbot_models/train_encode_vocabulary
+pythoncore/train_cut.dec

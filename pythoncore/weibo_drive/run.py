@@ -2,11 +2,15 @@
 # auto operator for weibo.
 
 import os,time,random
+#pip3 install pybase62
+#https://github.com/suminb/base62
+import base62
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import weibo_opt as opt
 
+#贴一个新的wb
 def _new_status(content):
     driver.get("https://m.weibo.cn/compose")
     transinput = driver.find_element_by_xpath('//div[@id="app"]/div[1]/div/main/div[1]/div/span/textarea[1]')
@@ -16,12 +20,50 @@ def _new_status(content):
     time.sleep(0.5)
     sendbtn = driver.find_element_by_xpath('//div[@id="app"]/div[1]/div/header/div[3]/a')
     driver.execute_script("arguments[0].click();", sendbtn) #force to click
-    #sendbtn.click()
 
+#获取第一条at我的wb内容和其他信息.分两种情况，转发at我的和原文at我的
 def _get_first_at_info():
+    #常量xpath
+    #外部卡片的位置
+    xpath_weibo_card = '//div[@id="box"]/section[1]/div[1]/div[1]'
+    #正文
+    xpath_weibo_card_content = '//div[@id="box"]/section[1]/div[1]/div[1]/section[1]/p[1]'
+    #转发card
+    xpath_weibo_reforward_card = '//div[@id="box"]/section[1]/div[1]/div[1]/section[1]/div'
+
     driver.get("https://m.weibo.cn/msg/atme?subtype=allWB")
-    first_card = driver.find_element_by_xpath('//div[@id="box"]/section[1]/div[1]/div[1]/section[1]/p[1]')
+    weibo_mid = __get_element_attribute_by_xpath(xpath_weibo_card, 'data-jump')
+    weibo_id = __get_weiboid_from_data_jump(weibo_mid)
+    
+    first_card_content_el = driver.find_element_by_xpath(xpath_weibo_card_content)
+    #看看原文是否为转发，转发的话提取原文
+    if(__if_element_exist_by_xpath(xpath_weibo_reforward_card)):
+        reforward_mid = __get_element_attribute_by_xpath(xpath_weibo_reforward_card)
+        reforward_id = __get_weiboid_from_data_jump(weibo_mid)
     return first_card.text
+    
+def __get_element_attribute_by_xpath(xpath, f_attribute):
+    try:
+        el = driver.find_element_by_xpath(xpath)
+        return driver.get_attribute(f_attribute)
+    except:
+        return None
+    
+def __if_element_exist_by_xpath(xpath):
+    try:
+        driver.find_element_by_xpath(xpath)
+        detemter=True
+    except:
+        detemter=False
+    return detemter
+    
+def __get_weiboid_from_data_jump(in_str):
+    #like this:/1936857795/FbJlznW2L
+    mytmp = in_str.split("/")
+    if(len(mytmp) < 3):
+        return in_str
+    #pip3 install pybase62
+    return base62.decode(mytmp[2])
     
 def __read_file_into_list(filename, needstrip = True, myEncoding = "utf-8", prefix = '', suffix = ''):
     readlist = []
