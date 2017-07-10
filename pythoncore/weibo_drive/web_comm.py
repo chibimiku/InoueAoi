@@ -1,6 +1,8 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse
 
+import jieba
+
 port = 9999
 
 class TestClassA1():
@@ -117,8 +119,9 @@ def run(port, server_class=HTTPServer, handler_class=MyhandlerAoi):
     try:
         global var1 
         var1 = TestClassA1()
-        
-        #bot = Chatbot()
+        #use bot~~
+        global bot
+        bot = Chatbot('../data/chatbot_models/', '../data/chatbot_models/train_encode_vocabulary', '../data/chatbot_models/train_decode_vocabulary')
         server_address = ('', port)
         httpd = server_class(server_address, handler_class)
         print ("prepare http server on port:" + str(port))
