@@ -52,7 +52,7 @@ class Chatbot():
         vocab = dict([(x, y) for (y, x) in enumerate(tmp_vocab)])
         return vocab, tmp_vocab, len(readlines_result)
         
-    def get_respon(self, input_string):
+    def get_respon(self, input_string, debug = True):
         PAD_ID = 0
         GO_ID = 1
         EOS_ID = 2
@@ -64,11 +64,9 @@ class Chatbot():
         #for words in input_string.strip():
         for words in cut_word:
             input_string_vec.append(self.vocab_en.get(words, UNK_ID))
-        #bucket_id = min([b for b in range(len(self.buckets)) if self.buckets[b][0] > len(input_string_vec)])
-        bucket_id_list = [3]
-        for b in range(len(self.buckets)):
-            if self.buckets[b][0] > len(input_string_vec):
-                bucket_id_list.append(self.buckets[b][0])
+        bucket_id_list = [b for b in range(len(self.buckets)) if self.buckets[b][0] > len(input_string_vec)]
+        if(len(bucket_id_list) < 1):
+            bucket_id_list = [3] #fix if bucket_id empty...
         bucket_id = min(bucket_id_list)
         print ("[DEBUG]bucket_id:" + str(bucket_id))
         encoder_inputs, decoder_inputs, target_weights = self.model.get_batch({bucket_id: [(input_string_vec, [])]}, bucket_id)
@@ -83,7 +81,10 @@ class Chatbot():
             if(not single_el == last_put_word):
                 outputs_fixed.append(single_el)
                 last_put_word = single_el
-        response = "".join([tf.compat.as_str(self.vocab_de[output]) for output in outputs_fixed])
+        final_out_list = [tf.compat.as_str(self.vocab_de[output]) for output in outputs_fixed]
+        if(debug):
+            print " / ".join(final_out_list)
+        response = "".join(final_out_list)
         return response
         
 class MyhandlerAoi(BaseHTTPRequestHandler):

@@ -37,6 +37,7 @@ def _get_first_at_info():
 
     #inst
     weibo_info = dict()
+    weibo_info["reforward"] = False
     
     driver.get("https://m.weibo.cn/msg/atme?subtype=allWB")
     weibo_info["weibo_mid"] = __get_element_attribute_by_xpath(xpath_weibo_card, 'data-jump')
@@ -50,8 +51,10 @@ def _get_first_at_info():
     
     #看看原文是否为转发，转发的话提取原文
     if(__if_element_exist_by_xpath(xpath_weibo_reforward_card)):
+        weibo_info["reforward"] = True
         weibo_info["reforward_mid"] = __get_element_attribute_by_xpath(xpath_weibo_reforward_card, 'data-jump')
         weibo_info["reforward_id"] = __get_weiboid_from_data_jump(weibo_info["reforward_mid"])
+    print (weibo_info)
     return weibo_info
     
 def __get_element_text_by_xpath(xpath):
@@ -125,14 +128,31 @@ def react_chat():
 
     #xpaths...
     xpath_comment_btn = '//div[@id="box"]/section[1]/div[1]/div[1]/footer/a[2]'
+    xpath_reforward_btn = '//div[@id="box"]/section[1]/div[1]/div[1]/footer/a[1]'
+    '''
     xpath_input_area = '//textarea[@id="txt-publisher"]'
     xpath_also_reforward_checkbox = '//input[@id="settop-publisher"]'
     xpath_sendbtn = '//div[@id="box"]/header/a[2]'
-
+    '''
+    
+    #switch to detect if reforwarded.
     info = _get_first_at_info()
+    #get remote response...
     remote_response = utils.get_remote_response(info["content"])
-    print ("got message...")
-    print (remote_response)
+    
+    if(info["reforward"]):
+        xpath_input_area = '//textarea[@id="txt-publisher"]'
+        xpath_also_reforward_checkbox = '//input[@id="settop-publisher"]'
+        xpath_sendbtn = '//div[@id="box"]/header/a[2]'
+        make_some_response(xpath_comment_btn, xpath_input_area, remote_response, xpath_also_reforward_checkbox, xpath_sendbtn)
+    else:
+        xpath_input_area = '//div[@id="app"]/div[1]/div/main/div[1]/div/span/textarea[1]'
+        xpath_also_reforward_checkbox = '//div[@id="app"]/div[1]/div/footer/div[1]/label/input'
+        xpath_sendbtn = '//div[@id="app"]/div[1]/div/header/div[3]/a'
+        make_some_response(xpath_reforward_btn, xpath_input_area, remote_response, xpath_also_reforward_checkbox, xpath_sendbtn)
+
+#对结果转发或打评论
+def make_some_response(xpath_comment_btn, xpath_input_area, remote_response, xpath_checkbox, xpath_sendbtn):
     comment_btn = driver.find_element_by_xpath(xpath_comment_btn)
     comment_btn.click()
     input_area = driver.find_element_by_xpath(xpath_input_area)
@@ -140,12 +160,12 @@ def react_chat():
     input_area.send_keys(remote_response)
     time.sleep(0.5)
     #click reforward checkbox
-    also_reforward_checkbox = driver.find_element_by_xpath(xpath_also_reforward_checkbox)
+    also_reforward_checkbox = driver.find_element_by_xpath(xpath_checkbox)
     also_reforward_checkbox.click()
     time.sleep(0.2)
     sendbtn = driver.find_element_by_xpath(xpath_sendbtn)
     driver.execute_script("arguments[0].click();", sendbtn) #force to click
-    
+
 if __name__=='__main__':
     installize_driver = True
     if(installize_driver):
