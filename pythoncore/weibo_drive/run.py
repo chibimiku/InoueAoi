@@ -129,14 +129,12 @@ def react_chat():
     #xpaths...
     xpath_comment_btn = '//div[@id="box"]/section[1]/div[1]/div[1]/footer/a[2]'
     xpath_reforward_btn = '//div[@id="box"]/section[1]/div[1]/div[1]/footer/a[1]'
-    '''
-    xpath_input_area = '//textarea[@id="txt-publisher"]'
-    xpath_also_reforward_checkbox = '//input[@id="settop-publisher"]'
-    xpath_sendbtn = '//div[@id="box"]/header/a[2]'
-    '''
     
     #switch to detect if reforwarded.
     info = _get_first_at_info()
+    if(not info["weibo_id"]):
+        print ("[WARNING]no weibo_id, exit...")
+        return False
     #get remote response...
     remote_response = utils.get_remote_response(info["content"])
     
@@ -144,12 +142,19 @@ def react_chat():
         xpath_input_area = '//textarea[@id="txt-publisher"]'
         xpath_also_reforward_checkbox = '//input[@id="settop-publisher"]'
         xpath_sendbtn = '//div[@id="box"]/header/a[2]'
-        make_some_response(xpath_comment_btn, xpath_input_area, remote_response, xpath_also_reforward_checkbox, xpath_sendbtn)
+        #对取回来的数据稍微加工一下
+        keep_length = 140 - len(remote_response)
+        if(keep_length <= 0):
+            new_post_content = remote_response
+        else:
+            new_post_content = remote_response + info["content"][0:keep_length]
+        make_some_response(xpath_reforward_btn, xpath_input_area, new_post_content, xpath_also_reforward_checkbox, xpath_sendbtn)
     else:
         xpath_input_area = '//div[@id="app"]/div[1]/div/main/div[1]/div/span/textarea[1]'
         xpath_also_reforward_checkbox = '//div[@id="app"]/div[1]/div/footer/div[1]/label/input'
         xpath_sendbtn = '//div[@id="app"]/div[1]/div/header/div[3]/a'
         make_some_response(xpath_reforward_btn, xpath_input_area, remote_response, xpath_also_reforward_checkbox, xpath_sendbtn)
+    return True
 
 #对结果转发或打评论
 def make_some_response(xpath_comment_btn, xpath_input_area, remote_response, xpath_checkbox, xpath_sendbtn):
@@ -180,7 +185,7 @@ if __name__=='__main__':
         print ("let's try to send get command...")
         time.sleep(1)
         react_chat()
-        driver.close()
+        driver.quit()
     
     print ("all task done~")
     

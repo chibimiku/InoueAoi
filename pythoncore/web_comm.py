@@ -68,7 +68,8 @@ class Chatbot():
         if(len(bucket_id_list) < 1):
             bucket_id_list = [3] #fix if bucket_id empty...
         bucket_id = min(bucket_id_list)
-        print ("[DEBUG]bucket_id:" + str(bucket_id))
+        if(debug):
+            print ("[DEBUG]bucket_id:" + str(bucket_id))
         encoder_inputs, decoder_inputs, target_weights = self.model.get_batch({bucket_id: [(input_string_vec, [])]}, bucket_id)
         _, _, output_logits = self.model.step(self.sess, encoder_inputs, decoder_inputs, target_weights, bucket_id, True)
         outputs = [int(np.argmax(logit, axis=1)) for logit in output_logits]
@@ -83,7 +84,8 @@ class Chatbot():
                 last_put_word = single_el
         final_out_list = [tf.compat.as_str(self.vocab_de[output]) for output in outputs_fixed]
         if(debug):
-            print " / ".join(final_out_list)
+            print ("following output...")
+            print ('/'.join(final_out_list))
         response = "".join(final_out_list)
         return response
         
