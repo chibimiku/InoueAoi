@@ -64,13 +64,26 @@ class Chatbot():
         #for words in input_string.strip():
         for words in cut_word:
             input_string_vec.append(self.vocab_en.get(words, UNK_ID))
-        bucket_id = min([b for b in range(len(self.buckets)) if self.buckets[b][0] > len(input_string_vec)])
+        #bucket_id = min([b for b in range(len(self.buckets)) if self.buckets[b][0] > len(input_string_vec)])
+        bucket_id_list = [3]
+        for b in range(len(self.buckets)):
+            if self.buckets[b][0] > len(input_string_vec):
+                bucket_id_list.append(self.buckets[b][0])
+        bucket_id = min(bucket_id_list)
+        print ("[DEBUG]bucket_id:" + str(bucket_id))
         encoder_inputs, decoder_inputs, target_weights = self.model.get_batch({bucket_id: [(input_string_vec, [])]}, bucket_id)
         _, _, output_logits = self.model.step(self.sess, encoder_inputs, decoder_inputs, target_weights, bucket_id, True)
         outputs = [int(np.argmax(logit, axis=1)) for logit in output_logits]
         if EOS_ID in outputs:
             outputs = outputs[:outputs.index(EOS_ID)]
-        response = "".join([tf.compat.as_str(self.vocab_de[output]) for output in outputs])
+        outputs_fixed = []
+        #remove string occured repeatly.
+        last_put_word = ""
+        for single_el in outputs:
+            if(not single_el == last_put_word):
+                outputs_fixed.append(single_el)
+                last_put_word = single_el
+        response = "".join([tf.compat.as_str(self.vocab_de[output]) for output in outputs_fixed])
         return response
         
 class MyhandlerAoi(BaseHTTPRequestHandler):
@@ -123,12 +136,12 @@ class MyhandlerAoi(BaseHTTPRequestHandler):
                 result_content = "input error..."
             print (result_content)
             self.send_response(200)
-            self.send_header('Content-type','text/html')
+            self.send_header('Content-type','text/html; charset=utf-8')
             self.end_headers()
             #self.wfile.write(bytes("<!DOCTYPE html><head><meta charset=\"utf-8\"></head><body><h1>Device Static Content</h1></body>", "utf-8"))
-            self.wfile.write(bytes("{\"response\":\""), "utf-8")
+            self.wfile.write("{\"response\":\"".encode("utf-8"))
             self.wfile.write(result_content.encode("utf-8"))
-            self.wfile.write(bytes("\""), "utf-8")
+            self.wfile.write("\"}".encode("utf-8"))
             #self.wfile.write("</body>".encode("utf-8"))
             print (query_components)
             return

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import requests
+import json
 
 def remove_atinfo(instr):
     newwords = []
@@ -16,11 +18,17 @@ def find_between(in_string, first, last):
     except ValueError:
         return ""
     
+def get_remote_response(content, host = '127.0.0.1', port = 9999):
+    url = 'http://127.0.0.1:9999/'
+    r = requests.get(url, dict(
+        custword=content))
+    result_json = json.loads(r.content.decode("utf-8"))
+    print (result_json['response'])
+    return result_json['response']
+    
 if __name__=='__main__':
     #rs = remove_atinfo('123 @test 321 oogcasfas')
     #print (rs)
     print ("all task done~")
-    url = 'http://127.0.0.1:9999/'
-    r = requests.get(url, dict(
-        custword='你好'))
-    print(r.json)
+
+    #print (r.content.decode("utf-8"))
