@@ -5,8 +5,9 @@ import tensorflow as tf
 import seq2seq_model
 import os
 import numpy as np
-
 import jieba
+
+from weibo_drive.lib import mysql_py3
 
 port = 9999
 
@@ -84,6 +85,11 @@ class Chatbot():
                 last_put_word = single_el
         final_out_list = [tf.compat.as_str(self.vocab_de[output]) for output in outputs_fixed]
         if(debug):
+            try:
+                DB = mysql_py3.mysql_db(password = 'innovation', dbname = "userdata")
+                DB.insert('answer_log', {"version": '1', "input": input_string, "answer" : "".join(final_out_list), "answer_split": ('/'.join(final_out_list))})
+            except Exception:
+                print (str(Exception))
             print ("following output...")
             print ('/'.join(final_out_list))
         response = "".join(final_out_list)
