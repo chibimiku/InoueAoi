@@ -65,9 +65,12 @@ class Chatbot():
         #for words in input_string.strip():
         for words in cut_word:
             input_string_vec.append(self.vocab_en.get(words, UNK_ID))
-        bucket_id_list = [b for b in range(len(self.buckets)) if self.buckets[b][0] > len(input_string_vec)]
-        if(len(bucket_id_list) < 1):
-            bucket_id_list = [3] #fix if bucket_id empty...
+        #bucket_id_list = [b for b in range(len(self.buckets)) if self.buckets[b][0] > len(input_string_vec)]
+        #列表推导式
+        bucket_id_list = [3]
+        for b in range(len(self.buckets)):
+            if (self.buckets[b][0] > len(input_string_vec)):
+                bucket_id_list.append(b)
         bucket_id = min(bucket_id_list)
         if(debug):
             print ("[DEBUG]bucket_id:" + str(bucket_id))
@@ -138,7 +141,8 @@ class MyhandlerAoi(BaseHTTPRequestHandler):
                 
                 #result_content = "中文测试"
                 #print (query_components["custword"])
-                myinput = urllib.parse.unquote(query_components["custword"])
+                #using unquote_plus to slove space(got '+') problem
+                myinput = urllib.parse.unquote_plus(query_components["custword"])
                 result_content = bot.get_respon(myinput)
                 print (myinput)
             else:
