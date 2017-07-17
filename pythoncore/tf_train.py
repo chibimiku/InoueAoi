@@ -25,7 +25,7 @@ layer_size = 768  # 每层大小
 num_layers = 5   # 层数
 batch_size =  64
  
-# 读取*dencode.vec和*decode.vec数据（数据还不算太多, 一次读人到内存）
+# 读取*dencode.vec和*decode.vec数据（数据还不算太多, 一次读入到内存）
 def read_data(source_path, target_path, max_size=None):
 	data_set = [[] for _ in buckets]
 	with tf.gfile.GFile(source_path, mode="r") as source_file:
