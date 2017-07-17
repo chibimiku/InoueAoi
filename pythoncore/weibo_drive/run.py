@@ -219,7 +219,7 @@ def remove_same_abba(in_str, in_sperator):
             if(not s_word==last_word):
                 new_split.append(s_word)
                 last_word = s_word
-        return "".join(new_split)
+        return in_sperator.join(new_split)
     else:
         return in_str
     
