@@ -59,34 +59,91 @@ def train_feeling():
     x_base = get_token_ids_from_file(vec_filename, 140)
     y__base = get_token_ids_from_file(emotion_vec, 6)
     
-    for i in range(200000):
-        #每次随机取100个进行训练
-        batch_xs, batch_ys = get_train_simples(100, x_base, y__base)
+    max_step = 30000
+    for i in range(max_step):
+        #每次随机取200个进行训练
+        if(i > 0 and i%500 == 0):
+            print ("run for step:" +str(i))
+        batch_xs, batch_ys = get_train_simples(200, x_base, y__base)
         sess.run(train_step, feed_dict={in_sentence: batch_xs, y_: batch_ys})
     
     #保存模型
     saver = tf.train.Saver()
-    save_path = saver.save(sess, "data/models/emotion/save_test.ckpt")
+    save_path = saver.save(sess, "data/models/emotion/save_test.ckpt", global_step=max_step)
     
-    
+    #验证模型？
+    correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_, 1))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
+def recover_feeling(checkpoint):
+
+    #设置变量
+    in_sentence = tf.placeholder(tf.float32, [None, 140])
+    
+    weight = tf.Variable(tf.zeros([140, 6]))
+    biases = tf.Variable(tf.zeros([6]))
+
+    #y = softmax(Wx + b)
+    y = tf.nn.softmax(tf.matmul(in_sentence, weight) + biases)
+    y_ = tf.placeholder(tf.float32, [None, 6])
+    sess = tf.InteractiveSession()
+    
+    #恢复模型.
+    saver = tf.train.Saver()
+    saver.restore(sess, checkpoint)
+    
+    #读取模型完毕，加载词表
+    vocab, tmp_vocab = read_vocabulary('data/emotion/vocabulary.txt')
+    
+    #把一些句子转化为vec的array
+    vec_list1 = convert_sentence_to_vec_list('你今天感觉怎么样', vocab, 140)
+    vec_list2 = convert_sentence_to_vec_list('高兴啊', vocab, 140)
+    vec_list_final = [np.array(vec_list1), np.array(vec_list2)]
+    print (vec_list_final)
+    
+    #交给sess进行检查
+    data = np.array(vec_list_final)
+    result = sess.run(y, feed_dict={in_sentence: data})
+    print (result)
+
+def convert_sentence_to_vec_list(sentence, vocab, length):
+    word_list = jieba.lcut(sentence)
+    vec_list = []
+    for word in word_list:
+        vec_list.append(vocab.get(word, '__UNK__'))
+    if(len(vec_list) < length):
+        for _ in range(length - len(vec_list)):
+            vec_list.append(0)
+    return vec_list
+        
+def read_vocabulary(input_file):
+	tmp_vocab = []
+	with open(input_file, "r", encoding="utf-8") as f:
+		tmp_vocab.extend(f.readlines())
+	tmp_vocab = [line.strip() for line in tmp_vocab]
+	vocab = dict([(x, y) for (y, x) in enumerate(tmp_vocab)])
+	return vocab, tmp_vocab    
+    
+def get_token_ids_from_line(line, length, fillzero = True):   
+    el_count = 0
+    data_str = line.split(" ")
+    data_int = []
+    for my_num in data_str:
+        if(el_count >= length):
+            #比预期多的话直接返回
+            break
+        data_int.append(int(my_num))
+        el_count = el_count + 1
+    if(el_count < length and fillzero):
+        for _ in range(length - el_count):
+            data_int.append(int(0)) #剩余部分填0
+    return data_int
+    
 def get_token_ids_from_file(filepath, length, fillzero = True):
     data = []
     with open(filepath, 'r' ,encoding = "utf8") as fp:
         for line in fp:
-            el_count = 0
-            data_str = line.split(" ")
-            data_int = []
-            for my_num in data_str:
-                if(el_count >= length):
-                    #比预期多的话直接返回
-                    break
-                data_int.append(int(my_num))
-                el_count = el_count + 1
-            if(el_count < length and fillzero):
-                for _ in range(length - el_count):
-                    data_int.append(int(0)) #剩余部分填0
-            data.append(data_int)
+            data.append(get_token_ids_from_line(line,length, fillzero))
     return data
 
 def get_train_simples(num, list1, list2):
@@ -103,8 +160,7 @@ def get_train_simples(num, list1, list2):
         new_list1.append(np.array(list1[id]))
         new_list2.append(np.array(list2[id]))
     return (np.array(new_list1), np.array(new_list2))
-        
-    
+
 def test_echo_mnist_single():
     mnist = input_data.read_data_sets('MNIST_data/', one_hot=True)
     batch_xs, batch_ys = mnist.train.next_batch(2)
@@ -112,7 +168,8 @@ def test_echo_mnist_single():
 def gen_vecfile(outfile_filename, vocabulary_filename, emotion_filename, sentence_vec_filename):
     #分别读取6种情绪的文件，注意固定顺序:愤怒、恐惧、惊讶、厌恶、快乐和悲伤
     emotion_list = ['angry', 'scary', 'surprised', 'loath', 'happy', 'sorrowful']
-    rev_vocabulary = []
+    #0代表填充物
+    rev_vocabulary = ['__PAD__', '__UNK__']
     #弄一个6个0组组成的list，在一号emo的时候填充为[1,0,0,0,0,0].其他类同，这件事也可以在训练前读取list的时候做，可以减少储存空间（只保存1个值就行了），这里统一格式方便理解。
     ori_score_list = [0,0,0,0,0,0] 
     
@@ -173,5 +230,6 @@ def convert_to_str_list(in_list):
             
 #生成数据文件，这个只用跑一次就行
 #gen_vecfile('data/emotion/sentence_cut.txt', 'data/emotion/vocabulary.txt', 'data/emotion/emotion_vec.txt', 'data/emotion/sentence_vec.txt')
-test_echo_mnist_single()
+#test_echo_mnist_single()
 train_feeling()
+#recover_feeling('data/models/emotion/save_test.ckpt')
