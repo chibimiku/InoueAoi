@@ -9,7 +9,7 @@ import jieba
 
 from weibo_drive.lib import mysql_py3
 
-port = 9999
+port = 32727
 
 class TestClassA1():
     def __init__(self):

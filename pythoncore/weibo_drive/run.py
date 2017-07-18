@@ -10,6 +10,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import weibo_opt as opt
 import utils
+from lib import mysql_py3
 
 #贴一个新的wb
 def _new_status(content):
@@ -22,6 +23,11 @@ def _new_status(content):
     sendbtn = driver.find_element_by_xpath('//div[@id="app"]/div[1]/div/header/div[3]/a')
     driver.execute_script("arguments[0].click();", sendbtn) #force to click
 
+#保存微博页面详情和保存数据  
+def _save_weibo_detail(weibo_id):
+    driver.get("https://m.weibo.cn/status/" + str(weibo_id))
+    
+    
 #获取第一条at我的wb内容和其他信息.分两种情况，转发at我的和原文at我的
 def _get_first_at_info():
     #常量xpath
@@ -32,6 +38,8 @@ def _get_first_at_info():
     #author
     xpath_weibo_author = '//div[@id="box"]/section[1]/div[1]/div[1]/header/div[1]/a'
     xpath_weibo_reforward_author = '//div[@id="box"]/section[1]/div[1]/div[1]/header/div[1]/div[1]/a'
+    xpath_weibo_reforward_content = '//div[@id="box"]/section[1]/div[1]/div[1]/section[1]/div[1]/div[1]/div[2]/div[2]'
+    xpath_weibo_reforward_ori_auhtor = '//div[@id="box"]/section[1]/div[1]/div[1]/section[1]/div[1]/div[1]/div[2]/div[1]'
     #转发card
     xpath_weibo_reforward_card = '//div[@id="box"]/section[1]/div[1]/div[1]/section[1]/div'
 
@@ -62,7 +70,12 @@ def _get_first_at_info():
         weibo_info["reforward"] = True
         weibo_info["reforward_mid"] = __get_element_attribute_by_xpath(xpath_weibo_reforward_card, 'data-jump')
         weibo_info["reforward_id"] = str(__get_weiboid_from_data_jump(weibo_info["reforward_mid"]))
-    print (weibo_info)
+        weibo_info["reforward_ori_content"] = __get_element_text_by_xpath(xpath_weibo_reforward_content)
+        weibo_info["reforward_ori_author"] = __get_element_text_by_xpath(xpath_weibo_reforward_ori_auhtor)
+    try:
+        print (weibo_info)
+    except:
+        print ("may got error when get weibo_info...")
     return weibo_info
     
 def __get_element_text_by_xpath(xpath):
@@ -139,7 +152,9 @@ def react_chat():
     #prevent from load repetly..
     last_weibo_id_file = "data/last_weibo_id.txt"
     last_weibo_id = utils.read_file_intostr(last_weibo_id_file, True)
-    print ("got last weibo id:" + last_weibo_id + " ...")
+    if(not last_weibo_id):
+        last_weibo_id = "0"
+    print ("got last weibo id:" + str(last_weibo_id) + " ...")
 
     #xpaths...
     xpath_comment_btn = '//div[@id="box"]/section[1]/div[1]/div[1]/footer/a[2]'
@@ -165,12 +180,41 @@ def react_chat():
     #get remote response...
     send_content = remove_at_info(info["content"])
     send_content = send_content.replace("//", " ") #remove reforward list
-    remote_response = utils.get_remote_response(send_content)
+    remote_response = utils.get_remote_response(send_content, port=32727)
     if(len(remote_response) <= 0):
         print ("got remote_response error...")
         return False
     remote_response = remote_response.replace("__UNK__", "什么")
     
+    #解析右斜杠分开的指令集
+    #先初始化db
+    DB = mysql_py3.mysql_db(password = 'innovation', dbname = "userdata")
+    content_split = info["content"].split()
+    command_dict = DB.query('SELECT * FROM keyword_index')
+    print ("got " + str(len(command_dict)) + " command(s) from db...")
+    for maybe_cmd in content_split:
+        maybe_cmd = maybe_cmd.strip()
+        for row in command_dict:
+            str_check = '/' + row["command"]
+            if(maybe_cmd == str_check):
+                #如果有对应的函数就执行那个函数
+                print ("got command " + row["command"] + " ...")
+                try:
+                    runstr = row["function_name"] + "(info)"
+                    print ("going to run command: " + runstr)
+                    eval(runstr)
+                except Exception as e:
+                    print ("[INFO]cannot get function " + row["function_name"] + " ...")
+                    print ('Reason:', e)
+                #从db取对应回复pool的数据
+                ans_pool = DB.query('SELECT * FROM keyword_answer WHERE anspoolid=' + str(row["anspoolid"]))
+                if(len(ans_pool) > 0):
+                    my_choice = random.choice(ans_pool)
+                    if(row["noreply"]):
+                        remote_response = my_choice["answer"]
+                    else:
+                        remote_response = my_choice["answer"] + " " + remote_response
+                        
     if(info["reforward"]):
         xpath_input_area = '//textarea[@id="txt-publisher"]'
         xpath_also_reforward_checkbox = '//input[@id="settop-publisher"]'
@@ -193,6 +237,16 @@ def react_chat():
         make_some_response(xpath_reforward_btn, xpath_input_area, remote_response, xpath_also_reforward_checkbox, xpath_sendbtn)
     return True
 
+#保存微博信息
+def keep_weibo(in_info):
+    DB = mysql_py3.mysql_db(password = 'innovation', dbname = "userdata")
+    if(in_info["reforward"]):
+        DB.insert('keep_weibo', {"weibo_id": in_info["reforward_id"], "content": in_info["reforward_ori_content"], "author": in_info["reforward_ori_author"]})
+    else:
+        DB.insert('keep_weibo', {"weibo_id": in_info["weibo_id"], "content": in_info["content"], "author": in_info["author"]})
+    print ("keep weibo done...")
+    return True
+    
 #移除输入的at列表信息，以减少用户名对内容的干扰
 def remove_at_info(in_str):
     new_split = []

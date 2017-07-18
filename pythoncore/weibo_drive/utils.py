@@ -19,8 +19,8 @@ def find_between(in_string, first, last):
     except ValueError:
         return ""
     
-def get_remote_response(content, host = '127.0.0.1', port = 9999):
-    url = 'http://127.0.0.1:9999/'
+def get_remote_response(content, host = '127.0.0.1', port = 32727):
+    url = 'http://127.0.0.1:' + str(port) + '/'
     r = requests.get(url, dict(
         custword=content))
     try:
