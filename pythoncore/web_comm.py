@@ -144,7 +144,10 @@ class MyhandlerAoi(BaseHTTPRequestHandler):
                 #using unquote_plus to slove space(got '+') problem
                 myinput = urllib.parse.unquote_plus(query_components["custword"])
                 result_content = bot.get_respon(myinput)
-                print (myinput)
+                try:
+                    print (myinput)
+                except:
+                    print ("got some errors...")
             else:
                 result_content = "input error..."
             print (result_content)

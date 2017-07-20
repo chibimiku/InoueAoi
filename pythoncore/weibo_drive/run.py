@@ -230,6 +230,7 @@ def react_chat():
         #step2
         new_post_content = remove_same_abba(new_post_content, "，")
         make_some_response(xpath_reforward_btn, xpath_input_area, new_post_content, xpath_also_reforward_checkbox, xpath_sendbtn)
+        
     else:
         xpath_input_area = '//div[@id="app"]/div[1]/div/main/div[1]/div/span/textarea[1]'
         xpath_also_reforward_checkbox = '//div[@id="app"]/div[1]/div/footer/div[1]/label/input'
@@ -279,18 +280,22 @@ def remove_same_abba(in_str, in_sperator):
     
 #对结果转发或打评论
 def make_some_response(xpath_comment_btn, xpath_input_area, remote_response, xpath_checkbox, xpath_sendbtn):
-    comment_btn = driver.find_element_by_xpath(xpath_comment_btn)
-    comment_btn.click()
-    input_area = driver.find_element_by_xpath(xpath_input_area)
-    input_area.clear()
-    input_area.send_keys(remote_response)
-    time.sleep(0.5)
-    #click reforward checkbox
-    also_reforward_checkbox = driver.find_element_by_xpath(xpath_checkbox)
-    also_reforward_checkbox.click()
-    time.sleep(0.2)
-    sendbtn = driver.find_element_by_xpath(xpath_sendbtn)
-    driver.execute_script("arguments[0].click();", sendbtn) #force to click
+    try:
+        comment_btn = driver.find_element_by_xpath(xpath_comment_btn)
+        comment_btn.click()
+        input_area = driver.find_element_by_xpath(xpath_input_area)
+        input_area.clear()
+        input_area.send_keys(remote_response)
+        time.sleep(0.5)
+        #click reforward checkbox
+        also_reforward_checkbox = driver.find_element_by_xpath(xpath_checkbox)
+        also_reforward_checkbox.click()
+        time.sleep(0.2)
+        sendbtn = driver.find_element_by_xpath(xpath_sendbtn)
+        driver.execute_script("arguments[0].click();", sendbtn) #force to click
+    except Exception as e:
+        print ("[INFO]cannot make response.")
+        print ('Reason:', e)
 
 if __name__=='__main__':
     installize_driver = True
