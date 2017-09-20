@@ -13,25 +13,27 @@ import data_utils
 
 #设置常量
 
-encoding_in_filename = 'train.enc'
-encoding_out_filename = 'train_encode_vocabulary'
-encoding_cut_out_filename = 'train_cut.enc'
-encoding_vec_filename = 'train_encode.vec'
+dir_name = 'data/corpus/new_170919/'
 
-decoding_in_filename = 'train.dec'
-decoding_out_filename = 'train_decode_vocabulary'
-decoding_cut_out_filename = 'train_cut.dec'
-decoding_vec_filename = 'train_decode.vec'
+encoding_in_filename = dir_name + 'train.enc'
+encoding_out_filename = dir_name + 'train_encode_vocabulary'
+encoding_cut_out_filename = dir_name + 'train_cut.enc'
+encoding_vec_filename = dir_name + 'train_encode.vec'
 
-test_encoding_in_filename = 'test.enc'
-test_encoding_out_filename = 'test_encode_vocabulary'
-test_encoding_cut_out_filename = 'test_cut.enc'
-test_encoding_vec_filename = 'test_encode.vec'
+decoding_in_filename = dir_name + 'train.dec'
+decoding_out_filename = dir_name + 'train_decode_vocabulary'
+decoding_cut_out_filename = dir_name + 'train_cut.dec'
+decoding_vec_filename = dir_name + 'train_decode.vec'
 
-test_decoding_in_filename = 'test.dec'
-test_decoding_out_filename = 'test_decode_vocabulary'
-test_decoding_cut_out_filename = 'test_cut.dec'
-test_decoding_vec_filename = 'test_decode.vec'
+test_encoding_in_filename = dir_name + 'test.enc'
+test_encoding_out_filename = dir_name + 'test_encode_vocabulary'
+test_encoding_cut_out_filename = dir_name + 'test_cut.enc'
+test_encoding_vec_filename = dir_name + 'test_encode.vec'
+
+test_decoding_in_filename = dir_name + 'test.dec'
+test_decoding_out_filename = dir_name + 'test_decode_vocabulary'
+test_decoding_cut_out_filename = dir_name + 'test_cut.dec'
+test_decoding_vec_filename = dir_name + 'test_decode.vec'
 
 appendword = 'data/chinese_char_3k5.txt' #3500个常用汉字
 
