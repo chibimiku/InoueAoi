@@ -56,11 +56,13 @@ UNK_ID = 3
 #在分割的同时提取所有的词输出词表
 def gen_cut_file_jieba(inputfile, cut_outputfile, vocabulary_outfile, start_header, appendword = ''):
     print ("going to cut file...")
-    vocabulary = []
+    #vocabulary = [] #词典换成dict
+    vocabulary = {}
     outfileobj = open(cut_outputfile, 'w+', encoding = 'utf-8')
     #先输入头部的几个tag
     for word in start_header:
-        vocabulary.append(word)
+        #vocabulary.append(word)
+        vocabulary[word] = 1
     print ("goting to read input file " + inputfile)
     #读取原始文件
     progress_line = 0 
@@ -75,19 +77,22 @@ def gen_cut_file_jieba(inputfile, cut_outputfile, vocabulary_outfile, start_head
             outfileobj.write("\n")
             #维护词表
             for single_seg in seg_list:
+                #if(not single_seg in vocabulary):
                 if(not single_seg in vocabulary):
-                    vocabulary.append(single_seg)
+                    #vocabulary.append(single_seg)
+                    vocabulary[single_seg] = 1
             progress_line = progress_line + 1
     #通过appendword追加3500个常用汉字.
     if (not appendword == "" ):
         print ("going to open appendfile:" + str(appendword))
         with open(appendword, 'r', encoding = "utf8") as apf:
             for line in apf:
-                vocabulary.append(line.strip())
+                #vocabulary.append(line.strip())
+                vocabulary[line.strip()] = 1
     print ("output vocabulary to file:" + vocabulary_outfile)
     #输出词表
     vocabulary_fileobj = open(vocabulary_outfile, 'w+', encoding = 'utf-8')
-    for word in vocabulary:
+    for word in vocabulary.keys():
         vocabulary_fileobj.write(word)
         vocabulary_fileobj.write("\n")
             
