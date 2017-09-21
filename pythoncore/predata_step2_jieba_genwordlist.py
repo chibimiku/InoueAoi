@@ -59,10 +59,13 @@ def gen_cut_file_jieba(inputfile, cut_outputfile, vocabulary_outfile, start_head
     #vocabulary = [] #词典换成dict
     vocabulary = {}
     outfileobj = open(cut_outputfile, 'w+', encoding = 'utf-8')
+    '''
     #先输入头部的几个tag
+    #dict无序，这里弃用
     for word in start_header:
         #vocabulary.append(word)
         vocabulary[word] = 1
+    '''
     print ("goting to read input file " + inputfile)
     #读取原始文件
     progress_line = 0 
@@ -92,6 +95,10 @@ def gen_cut_file_jieba(inputfile, cut_outputfile, vocabulary_outfile, start_head
     print ("output vocabulary to file:" + vocabulary_outfile)
     #输出词表
     vocabulary_fileobj = open(vocabulary_outfile, 'w+', encoding = 'utf-8')
+    #在这里输出头部那几个固定的词
+    for word in start_header:
+        vocabulary_fileobj.write(word)
+        vocabulary_fileobj.write("\n")
     for word in vocabulary.keys():
         vocabulary_fileobj.write(word)
         vocabulary_fileobj.write("\n")
