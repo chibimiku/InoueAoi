@@ -13,25 +13,27 @@ import data_utils
 
 #设置常量
 
-dir_name = 'data/corpus/new_170919/'
+dir_name = 'data/'
 
 encoding_in_filename = dir_name + 'train.enc'
-encoding_out_filename = dir_name + 'train_encode_vocabulary'
+encoding_vocab_filename = dir_name + 'train_encode_vocabulary'
 encoding_cut_out_filename = dir_name + 'train_cut.enc'
+encoding_cut_out_fixed_filename = dir_name + 'train_cut_fixed.enc'
 encoding_vec_filename = dir_name + 'train_encode.vec'
 
 decoding_in_filename = dir_name + 'train.dec'
-decoding_out_filename = dir_name + 'train_decode_vocabulary'
+decoding_vocab_filename = dir_name + 'train_decode_vocabulary'
 decoding_cut_out_filename = dir_name + 'train_cut.dec'
+decoding_cut_out_fixed_filename = dir_name + 'train_cut_fixed.dec'
 decoding_vec_filename = dir_name + 'train_decode.vec'
 
 test_encoding_in_filename = dir_name + 'test.enc'
-test_encoding_out_filename = dir_name + 'test_encode_vocabulary'
+test_encoding_vocab_filename = dir_name + 'test_encode_vocabulary'
 test_encoding_cut_out_filename = dir_name + 'test_cut.enc'
 test_encoding_vec_filename = dir_name + 'test_encode.vec'
 
 test_decoding_in_filename = dir_name + 'test.dec'
-test_decoding_out_filename = dir_name + 'test_decode_vocabulary'
+test_decoding_vocab_filename = dir_name + 'test_decode_vocabulary'
 test_decoding_cut_out_filename = dir_name + 'test_cut.dec'
 test_decoding_vec_filename = dir_name + 'test_decode.vec'
 
@@ -49,11 +51,12 @@ GO_ID = 1
 EOS_ID = 2
 UNK_ID = 3
 
+
 #给字典按value排序，返回的是list
 def sort_by_value(d, insert_max = 0, in_reverse=True):
     print ("insert_max:" + str(insert_max))
     #return sorted(d.items(), lambda x, y: cmp(x[1], y[1]), reverse=in_reverse)
-    list_t = sorted(d.items(), key=lambda item:item[1])
+    list_t = sorted(d.items(), key=lambda item:item[1], reverse=in_reverse)
     return_list = []
     insert_count = 0
     for row in list_t:
@@ -150,16 +153,48 @@ def gen_vocabulary_file_jieba(inputfile, outputfile, start_header, vocabulary_si
             vocabulary_count = vocabulary_count + 1
     print ("outputfile " + outputfile + " with " + str(vocabulary_count) + " line(s)...")
     return True
+    
+def data_ap(cuted_data_path, vocab_path, output_path):
+    vocab = {}
+    #先加载词表成dict
+    with open(vocab_path, 'r' , encoding="utf8") as fp:
+        for line in fp:
+            vocab[line.strip()] = 1
+    print ("loaded " + str(len(vocab)) + " word(s)")
+    
+    word_count_cutted = 0
+    word_count_not_cutted = 0
+    with open(cuted_data_path, 'r', encoding="utf8" ) as fp:
+        with open(output_path, 'w+' , encoding="utf8") as wfp:
+            for line in fp:
+                wordlist = line.strip().split(' ')
+                new_wordlist = []
+                for word in wordlist:
+                    if(word in vocab):
+                        word_count_not_cutted = word_count_not_cutted + 1
+                        new_wordlist.append(word)
+                    else:
+                        word_count_cutted =  word_count_cutted + 1
+                        for ss_char in word:
+                            new_wordlist.append(ss_char)
+                wfp.write(" ".join(new_wordlist))
+                wfp.write("\n")
+    print ("not cut word: " + str(word_count_not_cutted))
+    print ("cut word: " + str(word_count_cutted))
 
 #抓紧了开车
-gen_cut_file_jieba(encoding_in_filename, encoding_cut_out_filename, encoding_out_filename, START_VOCABULART, appendword)
-gen_cut_file_jieba(decoding_in_filename, decoding_cut_out_filename, decoding_out_filename, START_VOCABULART, appendword)
-gen_cut_file_jieba(test_encoding_in_filename, test_encoding_cut_out_filename, test_encoding_out_filename, START_VOCABULART, appendword)
-gen_cut_file_jieba(test_decoding_in_filename, test_decoding_cut_out_filename, test_decoding_out_filename, START_VOCABULART, appendword)
+gen_cut_file_jieba(encoding_in_filename, encoding_cut_out_filename, encoding_vocab_filename, START_VOCABULART, appendword)
+gen_cut_file_jieba(decoding_in_filename, decoding_cut_out_filename, decoding_vocab_filename, START_VOCABULART, appendword)
+gen_cut_file_jieba(test_encoding_in_filename, test_encoding_cut_out_filename, test_encoding_vocab_filename, START_VOCABULART, appendword)
+gen_cut_file_jieba(test_decoding_in_filename, test_decoding_cut_out_filename, test_decoding_vocab_filename, START_VOCABULART, appendword)
+
+#依照新的词表，对已经cut过的文件里，无法从vocab找到的"词"再次分解成字。
+data_ap(encoding_cut_out_filename, encoding_vocab_filename, encoding_cut_out_fixed_filename)
+data_ap(decoding_cut_out_filename, decoding_vocab_filename, decoding_cut_out_fixed_filename)
 
 
 #在上述步骤都完成之后，依词表将分词结果(_cut的输出)转化为向量
-data_utils.data_to_token_ids(encoding_cut_out_filename, encoding_vec_filename, encoding_out_filename)
-data_utils.data_to_token_ids(decoding_cut_out_filename, decoding_vec_filename, decoding_out_filename)
-data_utils.data_to_token_ids(test_encoding_cut_out_filename, test_encoding_vec_filename, test_encoding_out_filename)
-data_utils.data_to_token_ids(test_decoding_cut_out_filename, test_decoding_vec_filename, test_decoding_out_filename)
+data_utils.data_to_token_ids(encoding_cut_out_fixed_filename, encoding_vec_filename, encoding_vocab_filename)
+data_utils.data_to_token_ids(decoding_cut_out_fixed_filename, decoding_vec_filename, decoding_vocab_filename)
+data_utils.data_to_token_ids(test_encoding_cut_out_filename, test_encoding_vec_filename, test_encoding_vocab_filename)
+data_utils.data_to_token_ids(test_decoding_cut_out_filename, test_decoding_vec_filename, test_decoding_vocab_filename)
