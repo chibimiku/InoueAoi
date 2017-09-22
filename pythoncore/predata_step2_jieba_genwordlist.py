@@ -49,14 +49,30 @@ GO_ID = 1
 EOS_ID = 2
 UNK_ID = 3
 
+#给字典按value排序，返回的是list
+def sort_by_value(d, insert_max = 0, in_reverse=True):
+    print ("insert_max:" + str(insert_max))
+    #return sorted(d.items(), lambda x, y: cmp(x[1], y[1]), reverse=in_reverse)
+    list_t = sorted(d.items(), key=lambda item:item[1])
+    return_list = []
+    insert_count = 0
+    for row in list_t:
+        if(insert_max > 0 and insert_count > insert_max):
+            break
+        return_list.append(row[0])
+        insert_count = insert_count + 1
+    return return_list
 
 # 用jieba lib进行分词，产生分词过后拿空格分割开的训练集
 # offical site:https://github.com/fxsjy/jieba
 
 #在分割的同时提取所有的词输出词表
-def gen_cut_file_jieba(inputfile, cut_outputfile, vocabulary_outfile, start_header, appendword = ''):
+def gen_cut_file_jieba(inputfile, cut_outputfile, vocabulary_outfile, start_header, appendword = '', vocal_size = 100000):
     print ("going to cut file...")
+    print ("vocal size:" + str(vocal_size))
     #vocabulary = [] #词典换成dict
+    #vocal_size：按出现次数最多取最高频的x词
+    
     vocabulary = {}
     outfileobj = open(cut_outputfile, 'w+', encoding = 'utf-8')
     '''
@@ -71,7 +87,7 @@ def gen_cut_file_jieba(inputfile, cut_outputfile, vocabulary_outfile, start_head
     progress_line = 0 
     with open(inputfile, "r", encoding = "utf8") as f:
         for line in f:
-            if(progress_line % 2500 == 0):
+            if(progress_line % 10000 == 0):
                 print ("proc for " + str(progress_line) + " line(s)...")
                 print ("vocabulary size: " + str(len(vocabulary)))
             seg_list = jieba.lcut(line.strip(), cut_all=False) #lcut直接拿list
@@ -84,14 +100,21 @@ def gen_cut_file_jieba(inputfile, cut_outputfile, vocabulary_outfile, start_head
                 if(not single_seg in vocabulary):
                     #vocabulary.append(single_seg)
                     vocabulary[single_seg] = 1
+                else:
+                    vocabulary[single_seg] = vocabulary[single_seg] + 1
             progress_line = progress_line + 1
-    #通过appendword追加3500个常用汉字.
+    vocabulary_sorted = sort_by_value(vocabulary, vocal_size, in_reverse=True) #排序，这一步会比较费劲
+    #注意后面用 vocabulary_sorted 已经是list了
+        
+    #支持通过appendword追加3500个常用汉字
     if (not appendword == "" ):
         print ("going to open appendfile:" + str(appendword))
         with open(appendword, 'r', encoding = "utf8") as apf:
             for line in apf:
                 #vocabulary.append(line.strip())
-                vocabulary[line.strip()] = 1
+                if(not line.strip() in vocabulary_sorted):
+                    #vocabulary[line.strip()] = 1
+                    vocabulary_sorted.append(line.strip())
     print ("output vocabulary to file:" + vocabulary_outfile)
     #输出词表
     vocabulary_fileobj = open(vocabulary_outfile, 'w+', encoding = 'utf-8')
@@ -99,7 +122,7 @@ def gen_cut_file_jieba(inputfile, cut_outputfile, vocabulary_outfile, start_head
     for word in start_header:
         vocabulary_fileobj.write(word)
         vocabulary_fileobj.write("\n")
-    for word in vocabulary.keys():
+    for word in vocabulary_sorted:
         vocabulary_fileobj.write(word)
         vocabulary_fileobj.write("\n")
             
