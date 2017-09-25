@@ -11,6 +11,7 @@ GO_ID = 1
 EOS_ID = 2
 UNK_ID = 3
 
+model_path = 'data/models/chat/'
  
 train_encode_vec = 'train_encode.vec'
 train_decode_vec = 'train_decode.vec'
