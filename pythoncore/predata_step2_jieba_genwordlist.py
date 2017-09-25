@@ -15,12 +15,14 @@ import data_utils
 
 dir_name = 'data/'
 
+encoding_in_filename_before_filter = dir_name +　'train_before.enc'
 encoding_in_filename = dir_name + 'train.enc'
 encoding_vocab_filename = dir_name + 'train_encode_vocabulary'
 encoding_cut_out_filename = dir_name + 'train_cut.enc'
 encoding_cut_out_fixed_filename = dir_name + 'train_cut_fixed.enc'
 encoding_vec_filename = dir_name + 'train_encode.vec'
 
+decoding_in_filename_before_filter = dir_name +　'train_before.dec'
 decoding_in_filename = dir_name + 'train.dec'
 decoding_vocab_filename = dir_name + 'train_decode_vocabulary'
 decoding_cut_out_filename = dir_name + 'train_cut.dec'
@@ -154,6 +156,7 @@ def gen_vocabulary_file_jieba(inputfile, outputfile, start_header, vocabulary_si
     print ("outputfile " + outputfile + " with " + str(vocabulary_count) + " line(s)...")
     return True
     
+#依照新的词表，对已经cut过的文件里，无法从vocab找到的"词"再次分解成字。
 def data_ap(cuted_data_path, vocab_path, output_path):
     vocab = {}
     #先加载词表成dict
@@ -181,7 +184,45 @@ def data_ap(cuted_data_path, vocab_path, output_path):
                 wfp.write("\n")
     print ("not cut word: " + str(word_count_not_cutted))
     print ("cut word: " + str(word_count_cutted))
+    
+#对两个文件处理，过滤掉在file1里的重复项，同时file2对应行也干掉.
+def do_filter_two(file1_path, file2_path, file1_outpath, file2_outpath):
+    history_in = {} #弄个dict用来放历史索引
+    
+    drop_count = 0
+    total_line = 0
+    
+    wfp1 = open(file1_outpath, 'w+', encoding = "utf8")
+    wfp2 = open(file2_outpath, 'w+', encoding = "utf8")
+    
+    with open(file1_path, 'r' , encoding="utf8") as fp1:
+        with open(file2_path, 'r' , encoding="utf8") as fp2:
+            for line1 in fp1:
+                total_line = total_line + 1
+                if(total_line % 50000 == 0):
+                    print ("run for " + str(total_line) + " line(s)...")
+                l2 = fp2.readline().strip()
+                l1 = line1.strip()
+                if(l1 in history_in):
+                    drop_count = drop_count + 1
+                    continue
+                history_in[l1] = 1
+                wfp1.write(l1)
+                wfp1.write("\n")
+                wfp2.write(l2)
+                wfp2.write("\n")
+                
+    #关闭wfp1和wfp2
+    wfp1.close()
+    wfp2.close()
+    
+    print ("drop line:" + str(drop_count))
+    print ("total line:" + str(total_line))
+    
 
+#预处理过滤掉重复的输入.
+do_filter_two(encoding_in_filename_before_filter, decoding_in_filename_before_filter, encoding_in_filename, decoding_in_filename)
+    
 #抓紧了开车
 gen_cut_file_jieba(encoding_in_filename, encoding_cut_out_filename, encoding_vocab_filename, START_VOCABULART, appendword)
 gen_cut_file_jieba(decoding_in_filename, decoding_cut_out_filename, decoding_vocab_filename, START_VOCABULART, appendword)
@@ -191,7 +232,6 @@ gen_cut_file_jieba(test_decoding_in_filename, test_decoding_cut_out_filename, te
 #依照新的词表，对已经cut过的文件里，无法从vocab找到的"词"再次分解成字。
 data_ap(encoding_cut_out_filename, encoding_vocab_filename, encoding_cut_out_fixed_filename)
 data_ap(decoding_cut_out_filename, decoding_vocab_filename, decoding_cut_out_fixed_filename)
-
 
 #在上述步骤都完成之后，依词表将分词结果(_cut的输出)转化为向量
 data_utils.data_to_token_ids(encoding_cut_out_fixed_filename, encoding_vec_filename, encoding_vocab_filename)
