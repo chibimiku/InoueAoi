@@ -21,7 +21,7 @@ vocabulary_encode_size = 127963
 vocabulary_decode_size = 129142
  
 buckets = [(5, 10), (10, 15), (20, 25), (40, 50)]
-layer_size = 768  # 每层大小
+layer_size = 1024  # 每层大小
 num_layers = 5   # 层数
 batch_size =  64
  
