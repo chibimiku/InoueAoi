@@ -10,6 +10,7 @@ PAD_ID = 0
 GO_ID = 1
 EOS_ID = 2
 UNK_ID = 3
+
  
 train_encode_vec = 'train_encode.vec'
 train_decode_vec = 'train_decode.vec'
@@ -46,14 +47,14 @@ def read_data(source_path, target_path, max_size=None):
  
 model = seq2seq_model.Seq2SeqModel(source_vocab_size=vocabulary_encode_size, target_vocab_size=vocabulary_decode_size,
                                    buckets=buckets, size=layer_size, num_layers=num_layers, max_gradient_norm= 5.0,
-                                   batch_size=batch_size, learning_rate=0.5, learning_rate_decay_factor=0.97, forward_only=False, use_lstm=False)
+                                   batch_size=batch_size, learning_rate=0.5, learning_rate_decay_factor=0.97, forward_only=False, use_lstm=True)
  
 config = tf.ConfigProto()
 config.gpu_options.allocator_type = 'BFC'  # 防止 out of memory
  
 with tf.Session(config=config) as sess:
 	# 恢复前一次训练
-	ckpt = tf.train.get_checkpoint_state('.')
+	ckpt = tf.train.get_checkpoint_state(model_path)
 	if ckpt != None:
 		print(ckpt.model_checkpoint_path)
 		model.saver.restore(sess, ckpt.model_checkpoint_path)
@@ -94,7 +95,7 @@ with tf.Session(config=config) as sess:
 				sess.run(model.learning_rate_decay_op)
 			previous_losses.append(loss)
 			# 保存模型
-			checkpoint_path = "d:/code/python/test_models2/chatbot_seq2seq.ckpt"
+			checkpoint_path = model_path + "chatbot_seq2seq.ckpt"
 			model.saver.save(sess, checkpoint_path, global_step=model.global_step)
 			loss = 0.0
 			# 使用测试数据评估模型
