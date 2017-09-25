@@ -15,14 +15,14 @@ import data_utils
 
 dir_name = 'data/'
 
-encoding_in_filename_before_filter = dir_name +　'train_before.enc'
+encoding_in_filename_before_filter = dir_name + 'train_before.enc'
 encoding_in_filename = dir_name + 'train.enc'
 encoding_vocab_filename = dir_name + 'train_encode_vocabulary'
 encoding_cut_out_filename = dir_name + 'train_cut.enc'
 encoding_cut_out_fixed_filename = dir_name + 'train_cut_fixed.enc'
 encoding_vec_filename = dir_name + 'train_encode.vec'
 
-decoding_in_filename_before_filter = dir_name +　'train_before.dec'
+decoding_in_filename_before_filter = dir_name + 'train_before.dec'
 decoding_in_filename = dir_name + 'train.dec'
 decoding_vocab_filename = dir_name + 'train_decode_vocabulary'
 decoding_cut_out_filename = dir_name + 'train_cut.dec'
@@ -72,7 +72,7 @@ def sort_by_value(d, insert_max = 0, in_reverse=True):
 # offical site:https://github.com/fxsjy/jieba
 
 #在分割的同时提取所有的词输出词表
-def gen_cut_file_jieba(inputfile, cut_outputfile, vocabulary_outfile, start_header, appendword = '', vocal_size = 100000):
+def gen_cut_file_jieba(inputfile, cut_outputfile, vocabulary_outfile, start_header, appendword = '', vocal_size = 250000):
     print ("going to cut file...")
     print ("vocal size:" + str(vocal_size))
     #vocabulary = [] #词典换成dict
