@@ -50,7 +50,10 @@ model = seq2seq_model.Seq2SeqModel(source_vocab_size=vocabulary_encode_size, tar
                                    buckets=buckets, size=layer_size, num_layers=num_layers, max_gradient_norm= 5.0,
                                    batch_size=batch_size, learning_rate=0.5, learning_rate_decay_factor=0.97, forward_only=False, use_lstm=True)
  
-config = tf.ConfigProto()
+config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)
+#其中allow_soft_placement能让tensorflow遇到无法用GPU跑的数据时，自动切换成CPU进行。
+
+config.gpu_options.allow_growth = True #在用到的时候再分配显存
 config.gpu_options.allocator_type = 'BFC'  # 防止 out of memory
  
 with tf.Session(config=config) as sess:
