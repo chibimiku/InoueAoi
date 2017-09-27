@@ -102,6 +102,10 @@ def train_feeling():
     #验证模型？
     correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    
+    #最终输出验证模型的结果
+    eval_xs, eval_ys = get_train_simples(5, x_base, y__base) #再从训练集里拿5个出来
+    print ("test data accracy %g"%accuracy.eval(feed_dict={in_sentence: eval_xs, y_:eval_ys}))
 
 #恢复模型
 def recover_feeling(checkpoint):
