@@ -24,6 +24,9 @@ def train_feeling():
     #《TensorFlow实践》第3章 tensorflow第一步
     vec_filename = 'data/emotion/sentence_vec.txt'
     emotion_vec = 'data/emotion/emotion_vec.txt'
+    
+    #设置默认模型目录
+    default_module_dir = 'data/models/emotion/'
 
     #用典型的softmax regression模型来尝试推断这句话包含的情绪.
     #我们假定有6种基本情绪，愤怒、恐惧、惊讶、厌恶、快乐和悲伤，约定在标注时把这6个情绪编码为0-5
@@ -46,11 +49,35 @@ def train_feeling():
     #cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y), reduction_indices=[1]))
     cross_entropy = tf.reduce_mean(
         tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
-    train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
+        
+    '''
+    minimize(
+        loss,
+        global_step=None,
+        var_list=None,
+        gate_gradients=GATE_OP,
+        aggregation_method=None,
+        colocate_gradients_with_ops=False,
+        name=None,
+        grad_loss=None
+    )
+    '''
+    global_step = tf.Variable(0, name='global_step', trainable=False)
+    train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy, global_step = global_step)
     
     sess = tf.InteractiveSession()
     #initialize_all_variables已被弃用
-    tf.global_variables_initializer().run()
+    
+    #先检测以前是否存在固有的模型来恢复前一次训练
+    
+    saver = tf.train.Saver(max_to_keep = 2)
+    ckpt = tf.train.get_checkpoint_state(default_module_dir)
+    if ckpt != None:
+        print ("checkpoint detected in " + default_module_dir)
+        saver.restore(sess, ckpt.model_checkpoint_path)
+    else:
+        print ("checkpoint not found... start from first step.")
+        tf.global_variables_initializer().run()
     
     #开始训练
     #在那之前要先弄一波数据，把数据转化为真实向量
@@ -59,29 +86,31 @@ def train_feeling():
     x_base = get_token_ids_from_file(vec_filename, 140)
     y__base = get_token_ids_from_file(emotion_vec, 6)
     
-    max_step = 30000
+    
+    max_step = 5
     for i in range(max_step):
         #每次随机取200个进行训练
-        if(i > 0 and i%500 == 0):
+        if(i > 0 and i % 500 == 0):
             print ("run for step:" +str(i))
         batch_xs, batch_ys = get_train_simples(200, x_base, y__base)
         sess.run(train_step, feed_dict={in_sentence: batch_xs, y_: batch_ys})
     
+    print ("emotion training completed, step: " + str(max_step) + ", total step:" + str(global_step.eval()))
     #保存模型
-    saver = tf.train.Saver()
-    save_path = saver.save(sess, "data/models/emotion/save_test.ckpt", global_step=max_step)
+    save_path = saver.save(sess, default_module_dir + "save_test.ckpt", global_step = global_step.eval())
     
     #验证模型？
     correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
+#恢复模型
 def recover_feeling(checkpoint):
-
     #设置变量
     in_sentence = tf.placeholder(tf.float32, [None, 140])
     
     weight = tf.Variable(tf.zeros([140, 6]))
     biases = tf.Variable(tf.zeros([6]))
+    global_step = tf.Variable(0, name='global_step', trainable=False)
 
     #y = softmax(Wx + b)
     y = tf.nn.softmax(tf.matmul(in_sentence, weight) + biases)
@@ -117,12 +146,12 @@ def convert_sentence_to_vec_list(sentence, vocab, length):
     return vec_list
         
 def read_vocabulary(input_file):
-	tmp_vocab = []
-	with open(input_file, "r", encoding="utf-8") as f:
-		tmp_vocab.extend(f.readlines())
-	tmp_vocab = [line.strip() for line in tmp_vocab]
-	vocab = dict([(x, y) for (y, x) in enumerate(tmp_vocab)])
-	return vocab, tmp_vocab    
+    tmp_vocab = []
+    with open(input_file, "r", encoding="utf-8") as f:
+        tmp_vocab.extend(f.readlines())
+    tmp_vocab = [line.strip() for line in tmp_vocab]
+    vocab = dict([(x, y) for (y, x) in enumerate(tmp_vocab)])
+    return vocab, tmp_vocab    
     
 def get_token_ids_from_line(line, length, fillzero = True):   
     el_count = 0
