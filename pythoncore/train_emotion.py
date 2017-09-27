@@ -36,13 +36,29 @@ def train_feeling():
     in_sentence = tf.placeholder(tf.float32, [None, 140])
     
     #初始化这两个变量保存weights和biases(这个情绪的偏移倾向)
+    '''
     weight = tf.Variable(tf.zeros([140, 6]))
     biases = tf.Variable(tf.zeros([6]))
+    '''
+    
+    #init数据区
+    in_units = 140 #每句话取140个字补齐
+    h1_units = 2048
+    target_units = 6 #最终目标结果落到6种情绪里
+    W1 = tf.Variable(tf.truncated_normal([in_units,h1_units],stddev = 0.1))
+    b1 = tf.Variable(tf.zeros([h1_units]))
+    W2 = tf.Variable(tf.zeros([h1_units, target_units]))
+    b2 = tf.Variable(tf.zeros([ target_units]))
     
     #接下来用tf实现softmax regression算法
     #y = softmax(Wx + b)
-    y = tf.nn.softmax(tf.matmul(in_sentence, weight) + biases)
-    y_ = tf.placeholder(tf.float32, [None, 6])
+    #y = tf.nn.softmax(tf.matmul(in_sentence, weight) + biases)
+    
+    keep_prob = tf.placeholder(tf.float32)
+    hidden1 = tf.nn.relu(tf.matmul(in_sentence,W1)+b1)
+    hidden1_drop = tf.nn.dropout(hidden1,keep_prob)
+    y = tf.nn.softmax(tf.matmul(hidden1_drop,W2)+b2) #换成多层
+    y_ = tf.placeholder(tf.float32, [None, target_units])
     
     #reduce_xx系列是对tensor某一个维度上的数据进行运算求值，第一个参数input_tensor是输入的tensor，第二个参数reduction_indices是指在哪个维度上求值
     #reduce_mean是求平均值
@@ -83,17 +99,18 @@ def train_feeling():
     #在那之前要先弄一波数据，把数据转化为真实向量
     
     #从几个文件里load数据
-    x_base = get_token_ids_from_file(vec_filename, 140)
-    y__base = get_token_ids_from_file(emotion_vec, 6)
+    x_base = get_token_ids_from_file(vec_filename, in_units)
+    y__base = get_token_ids_from_file(emotion_vec, target_units)
     
+    max_step = 200
+    batch_num = 50 #一次取200个进行训练
     
-    max_step = 5
     for i in range(max_step):
         #每次随机取200个进行训练
         if(i > 0 and i % 500 == 0):
             print ("run for step:" +str(i))
-        batch_xs, batch_ys = get_train_simples(200, x_base, y__base)
-        sess.run(train_step, feed_dict={in_sentence: batch_xs, y_: batch_ys})
+        batch_xs, batch_ys = get_train_simples(batch_num, x_base, y__base)
+        sess.run(train_step, feed_dict={in_sentence: batch_xs, y_: batch_ys, keep_prob:0.8})
     
     print ("emotion training completed, step: " + str(max_step) + ", total step:" + str(global_step.eval()))
     #保存模型
@@ -105,8 +122,7 @@ def train_feeling():
     
     #最终输出验证模型的结果
     eval_xs, eval_ys = get_train_simples(5, x_base, y__base) #再从训练集里拿5个出来
-    print ("test data accracy %g"%accuracy.eval(feed_dict={in_sentence: eval_xs, y_:eval_ys}))
-
+    print ("test data accracy %g"%accuracy.eval(feed_dict={in_sentence: eval_xs, y_:eval_ys, keep_prob:1.0}))
 #恢复模型
 def recover_feeling(checkpoint):
     #设置变量
